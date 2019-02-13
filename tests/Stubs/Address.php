@@ -15,6 +15,7 @@ class Address extends Model
             $table->increments('id');
             $table->string('addressable_id');
             $table->string('addressable_type');
+            $table->string('city')->nullable();
             $table->timestamps();
         });
     }

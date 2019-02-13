@@ -25,6 +25,8 @@ class HasMorphOneEventsTest extends TestCase
         $user = User::create();
         $address = $user->address()->create([]);
 
+        $this->assertNotNull($user->address);
+
         Event::assertDispatched(
             'eloquent.morphOneCreating: ' . User::class,
             function ($event, $callback) use ($user, $address) {
@@ -47,6 +49,8 @@ class HasMorphOneEventsTest extends TestCase
         $user = User::create();
         $address = $user->address()->save(new Address);
 
+        $this->assertNotNull($user->address);
+
         Event::assertDispatched(
             'eloquent.morphOneSaving: ' . User::class,
             function ($event, $callback) use ($user, $address) {
@@ -68,7 +72,10 @@ class HasMorphOneEventsTest extends TestCase
 
         $user = User::create();
         $address = $user->address()->save(new Address);
-        $user->address()->update([]);
+        $user->address()->update(['city' => 'Aberdeen']);
+
+        $this->assertNotNull($user->address);
+        $this->assertEquals('Aberdeen', $user->address->city);
 
         Event::assertDispatched(
             'eloquent.morphOneUpdating: ' . User::class,
