@@ -22,7 +22,9 @@ class BelongsTo extends BelongsToBase implements EventDispatcher
      */
     public function associate($model)
     {
-        $this->parent->fireModelBelongsToEvent('associating', $this->relation, $model);
+        if ($this->parent->fireModelBelongsToEvent('associating', $this->relation, $model) === false) {
+            return false;
+        }
 
         $result = parent::associate($model);
 
@@ -40,7 +42,9 @@ class BelongsTo extends BelongsToBase implements EventDispatcher
     {
         $parent = $this->getResults();
 
-        $this->parent->fireModelBelongsToEvent('dissociating', $this->relation, $parent);
+        if ($this->parent->fireModelBelongsToEvent('dissociating', $this->relation, $parent) === false) {
+            return false;
+        }
 
         $result = parent::dissociate();
 
@@ -62,7 +66,9 @@ class BelongsTo extends BelongsToBase implements EventDispatcher
     {
         $related = $this->getResults();
 
-        $this->parent->fireModelBelongsToEvent('updating', $this->relation, $related);
+        if ($this->parent->fireModelBelongsToEvent('updating', $this->relation, $related) === false) {
+            return false;
+        }
 
         if ($result = $related->fill($attributes)->save()) {
             $this->parent->fireModelBelongsToEvent('updated', $this->relation, $related);
