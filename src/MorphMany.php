@@ -22,7 +22,9 @@ class MorphMany extends MorphManyBase implements EventDispatcher
      */
     public function save(Model $model)
     {
-        $this->fireModelRelationshipEvent('saving', $model);
+        if ($this->fireModelRelationshipEvent('saving', $model) === false) {
+            return false;
+        }
 
         $result = parent::save($model);
 
