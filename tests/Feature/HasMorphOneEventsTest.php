@@ -42,6 +42,22 @@ class HasMorphOneEventsTest extends TestCase
     }
 
     /** @test */
+    public function it_fires_morphOneCreating_and_stop_when_return_is_false_when_belonged_model_with_morph_one_created()
+    {
+        Event::listen(
+            'eloquent.morphOneCreating: ' . User::class,
+            function () {
+                return false;
+            }
+        );
+
+        $user = User::create();
+        $address = $user->address()->create([]);
+
+        $this->assertNull($user->address);
+    }
+
+    /** @test */
     public function it_fires_morphOneSaving_and_morphOneSaved_when_belonged_model_with_morph_one_saved()
     {
         Event::fake();
@@ -63,6 +79,22 @@ class HasMorphOneEventsTest extends TestCase
                 return $callback[0]->is($user) && $callback[1]->is($address);
             }
         );
+    }
+
+    /** @test */
+    public function it_fires_morphOneSaving_and_stop_when_return_is_false_when_belonged_model_with_morph_one_saved()
+    {
+        Event::listen(
+            'eloquent.morphOneSaving: ' . User::class,
+            function () {
+                return false;
+            }
+        );
+
+        $user = User::create();
+        $address = $user->address()->save(new Address);
+
+        $this->assertNull($user->address);
     }
 
     /** @test */
@@ -89,5 +121,23 @@ class HasMorphOneEventsTest extends TestCase
                 return $callback[0]->is($user) && $callback[1]->is($address);
             }
         );
+    }
+
+    /** @test */
+    public function it_fires_morphOneUpdating_and_stop_when_return_is_false_when_belonged_model_with_morph_one_updated()
+    {
+        Event::listen(
+            'eloquent.morphOneUpdating: ' . User::class,
+            function () {
+                return false;
+            }
+        );
+
+        $user = User::create();
+        $address = $user->address()->save(new Address);
+        $user->address()->update(['city' => 'Aberdeen']);
+
+        $this->assertNotNull($user->address);
+        $this->assertNull($user->address->city);
     }
 }
