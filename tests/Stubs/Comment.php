@@ -18,6 +18,7 @@ class Comment extends Model
             $table->increments('id');
             $table->string('commentable_id')->nullable();
             $table->string('commentable_type')->nullable();
+            $table->string('body')->nullable();
             $table->timestamps();
         });
     }

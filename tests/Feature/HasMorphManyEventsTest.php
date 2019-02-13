@@ -25,6 +25,8 @@ class HasMorphManyEventsTest extends TestCase
         $post = Post::create(['user_id' => 1]);
         $comment = $post->comments()->create([]);
 
+        $this->assertCount(1, $post->comments);
+
         Event::assertDispatched(
             'eloquent.morphManyCreating: ' . Post::class,
             function ($event, $callback) use ($post, $comment) {
@@ -47,6 +49,8 @@ class HasMorphManyEventsTest extends TestCase
         $post = Post::create(['user_id' => 1]);
         $comment = $post->comments()->save(new Comment);
 
+        $this->assertCount(1, $post->comments);
+
         Event::assertDispatched(
             'eloquent.morphManySaving: ' . Post::class,
             function ($event, $callback) use ($post, $comment) {
@@ -68,7 +72,10 @@ class HasMorphManyEventsTest extends TestCase
 
         $post = Post::create(['user_id' => 1]);
         $comment = $post->comments()->save(new Comment);
-        $post->comments()->update([]);
+        $post->comments()->update(['body' => 'Comment']);
+
+        $this->assertCount(1, $post->comments);
+        $this->assertEquals('Comment', $post->comments[0]->body);
 
         Event::assertDispatched(
             'eloquent.morphManyUpdating: ' . Post::class,
