@@ -17,7 +17,9 @@ trait HasOneOrManyMethods
     public function create(array $attributes = [])
     {
         return tap($this->related->newInstance($attributes), function ($instance) {
-            $this->fireModelRelationshipEvent('creating', $instance);
+            if ($this->fireModelRelationshipEvent('creating', $instance) === false) {
+                return false;
+            }
 
             $this->setForeignAttributesForCreate($instance);
 
@@ -36,7 +38,9 @@ trait HasOneOrManyMethods
      */
     public function save(Model $model)
     {
-        $this->fireModelRelationshipEvent('saving', $model);
+        if ($this->fireModelRelationshipEvent('saving', $model) === false) {
+            return false;
+        }
 
         $result = parent::save($model);
 
@@ -58,7 +62,9 @@ trait HasOneOrManyMethods
     {
         $related = $this->getResults();
 
-        $this->fireModelRelationshipEvent('updating', $related);
+        if ($this->fireModelRelationshipEvent('updating', $related) === false) {
+            return false;
+        }
 
         if ($result = parent::update($attributes)) {
             if ($related instanceof Model) {
