@@ -23,7 +23,10 @@ class HasMorphedByManyEventsTest extends TestCase
         Event::fake();
 
         $tag = Tag::create();
-        $post = $tag->posts()->create([]);
+        $post = $tag->posts()->create(['title' => 'Post title']);
+
+        $this->assertCount(1, $tag->posts);
+        $this->assertEquals('Post title', $tag->posts[0]->title);
 
         Event::assertDispatched(
             'eloquent.morphedByManyAttaching: ' . Tag::class,
@@ -47,6 +50,8 @@ class HasMorphedByManyEventsTest extends TestCase
         $tag = Tag::create();
         $post = $tag->posts()->save(new Post);
 
+        $this->assertCount(1, $tag->posts);
+
         Event::assertDispatched(
             'eloquent.morphedByManyAttaching: ' . Tag::class,
             function ($e, $callback) use ($post, $tag) {
@@ -69,6 +74,8 @@ class HasMorphedByManyEventsTest extends TestCase
         $post = Post::create();
         $tag = Tag::create();
         $tag->posts()->attach($post);
+
+        $this->assertCount(1, $tag->posts);
 
         Event::assertDispatched(
             'eloquent.morphedByManyAttaching: ' . Tag::class,
@@ -94,6 +101,8 @@ class HasMorphedByManyEventsTest extends TestCase
         $tag->posts()->attach($post);
         $tag->posts()->detach($post);
 
+        $this->assertCount(0, $tag->posts);
+
         Event::assertDispatched(
             'eloquent.morphedByManyDetaching: ' . Tag::class,
             function ($e, $callback) use ($post, $tag) {
@@ -116,6 +125,8 @@ class HasMorphedByManyEventsTest extends TestCase
         $post = Post::create();
         $tag = Tag::create();
         $tag->posts()->sync($post);
+
+        $this->assertCount(1, $tag->posts);
 
         Event::assertDispatched(
             'eloquent.morphedByManySyncing: ' . Tag::class,
@@ -140,6 +151,8 @@ class HasMorphedByManyEventsTest extends TestCase
         $tag = Tag::create();
         $tag->posts()->toggle($post);
 
+        $this->assertCount(1, $tag->posts);
+
         Event::assertDispatched(
             'eloquent.morphedByManyToggling: ' . Tag::class,
             function ($e, $callback) use ($post, $tag) {
@@ -162,7 +175,10 @@ class HasMorphedByManyEventsTest extends TestCase
         $post = Post::create();
         $tag = Tag::create();
         $tag->posts()->attach($post);
-        $tag->posts()->updateExistingPivot(1, ['created_at' => now()]);
+        $tag->posts()->updateExistingPivot(1, ['pivot_field' => 'Pivot Field']);
+
+        $this->assertCount(1, $tag->posts);
+        $this->assertEquals('Pivot Field', $tag->posts[0]->pivot->pivot_field);
 
         Event::assertDispatched(
             'eloquent.morphedByManyUpdatingExistingPivot: ' . Tag::class,

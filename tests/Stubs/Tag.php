@@ -23,12 +23,13 @@ class Tag extends Model
             $table->unsignedInteger('tag_id');
             $table->unsignedInteger('taggable_id');
             $table->string('taggable_type');
+            $table->string('pivot_field')->nullable();
             $table->timestamps();
         });
     }
 
     public function posts()
     {
-        return $this->morphedByMany(Post::class, 'taggable');
+        return $this->morphedByMany(Post::class, 'taggable')->withPivot('pivot_field');
     }
 }
