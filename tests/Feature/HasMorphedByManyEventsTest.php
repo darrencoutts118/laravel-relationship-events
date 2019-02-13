@@ -43,6 +43,22 @@ class HasMorphedByManyEventsTest extends TestCase
     }
 
     /** @test */
+    public function it_fires_morphedByManyAttaching_and_stop_if_false_is_returned()
+    {
+        Event::listen(
+            'eloquent.morphedByManyAttaching: ' . Tag::class,
+            function () {
+                return false;
+            }
+        );
+
+        $tag = Tag::create();
+        $post = $tag->posts()->create(['title' => 'Post title']);
+
+        $this->assertCount(0, $tag->posts);
+    }
+
+    /** @test */
     public function it_fires_morphedByManyAttaching_and_morphedByManyAttached_when_saved()
     {
         Event::fake();
@@ -64,6 +80,22 @@ class HasMorphedByManyEventsTest extends TestCase
                 return $callback[0] == 'posts' && $callback[1]->is($tag) && $callback[2][0] == $post->id;
             }
         );
+    }
+
+    /** @test */
+    public function it_fires_morphedByManyAttaching_and_stops_when_false_is_returned()
+    {
+        Event::listen(
+            'eloquent.morphedByManyAttaching: ' . Tag::class,
+            function () {
+                return false;
+            }
+        );
+
+        $tag = Tag::create();
+        $post = $tag->posts()->save(new Post);
+
+        $this->assertCount(0, $tag->posts);
     }
 
     /** @test */
@@ -89,6 +121,23 @@ class HasMorphedByManyEventsTest extends TestCase
                 return $callback[0] == 'posts' && $callback[1]->is($tag) && $callback[2][0] == $post->id;
             }
         );
+    }
+
+    /** @test */
+    public function it_fires_morphedByManyAttaching_and_stops_when_false_is_returned_when_attaching()
+    {
+        Event::listen(
+            'eloquent.morphedByManyAttaching: ' . Tag::class,
+            function () {
+                return false;
+            }
+        );
+
+        $post = Post::create();
+        $tag = Tag::create();
+        $tag->posts()->attach($post);
+
+        $this->assertCount(0, $tag->posts);
     }
 
     /** @test */
@@ -118,6 +167,24 @@ class HasMorphedByManyEventsTest extends TestCase
     }
 
     /** @test */
+    public function it_fires_morphedByManyDetaching_and_stops_when_false_is_returned()
+    {
+        Event::listen(
+            'eloquent.morphedByManyDetaching: ' . Tag::class,
+            function () {
+                return false;
+            }
+        );
+
+        $post = Post::create();
+        $tag = Tag::create();
+        $tag->posts()->attach($post);
+        $tag->posts()->detach($post);
+
+        $this->assertCount(1, $tag->posts);
+    }
+
+    /** @test */
     public function it_fires_morphedByManySyncing_and_morphedByManySynced()
     {
         Event::fake();
@@ -140,6 +207,23 @@ class HasMorphedByManyEventsTest extends TestCase
                 return $callback[0] == 'posts' && $callback[1]->is($tag) && $callback[2][0] == $post->id;
             }
         );
+    }
+
+    /** @test */
+    public function it_fires_morphedByManySyncing_and_stops_when_false_is_returned()
+    {
+        Event::listen(
+            'eloquent.morphedByManySyncing: ' . Tag::class,
+            function () {
+                return false;
+            }
+        );
+
+        $post = Post::create();
+        $tag = Tag::create();
+        $tag->posts()->sync($post);
+
+        $this->assertCount(0, $tag->posts);
     }
 
     /** @test */
@@ -168,6 +252,23 @@ class HasMorphedByManyEventsTest extends TestCase
     }
 
     /** @test */
+    public function it_fires_morphedByManyToggling_and_stops_when_false_is_returned()
+    {
+        Event::listen(
+            'eloquent.morphedByManyToggling: ' . Tag::class,
+            function () {
+                return false;
+            }
+        );
+
+        $post = Post::create();
+        $tag = Tag::create();
+        $tag->posts()->toggle($post);
+
+        $this->assertCount(0, $tag->posts);
+    }
+
+    /** @test */
     public function it_fires_morphedByManyUpdatingExistingPivot_and_morphedByManyUpdatedExistingPivot()
     {
         Event::fake();
@@ -192,5 +293,24 @@ class HasMorphedByManyEventsTest extends TestCase
                 return $callback[0] == 'posts' && $callback[1]->is($tag) && $callback[2][0] == $post->id;
             }
         );
+    }
+
+    /** @test */
+    public function it_fires_morphedByManyUpdatingExistingPivot_and_stops_when_false_is_returned()
+    {
+        Event::listen(
+            'eloquent.morphedByManyUpdatingExistingPivot: ' . Tag::class,
+            function () {
+                return false;
+            }
+        );
+
+        $post = Post::create();
+        $tag = Tag::create();
+        $tag->posts()->attach($post);
+        $tag->posts()->updateExistingPivot(1, ['pivot_field' => 'Pivot Field']);
+
+        $this->assertCount(1, $tag->posts);
+        $this->assertNull($tag->posts[0]->pivot->pivot_field);
     }
 }
