@@ -31,12 +31,31 @@ class HasBelongsToEventsTest extends TestCase
                 return $callback[0] == 'user' && $callback[1]->is($profile) && $callback[2]->is($user);
             }
         );
+
+        $this->assertEquals($user->id, $profile->user_id);
+
         Event::assertDispatched(
             'eloquent.belongsToAssociated: ' . Profile::class,
             function ($event, $callback) use ($user, $profile) {
                 return $callback[0] == 'user' && $callback[1]->is($profile) && $callback[2]->is($user);
             }
         );
+    }
+
+    /** @test */
+    public function it_fires_belongsToAssociating_and_stops_association_when_false_is_returned()
+    {
+        Event::listen(
+            'eloquent.belongsToAssociating: ' . Profile::class,
+            function () {
+                return false;
+            }
+        );
+
+        $profile = Profile::create();
+        $profile->user()->associate($user = User::create());
+
+        $this->assertNull($profile->user_id);
     }
 
     /** @test */
@@ -47,6 +66,8 @@ class HasBelongsToEventsTest extends TestCase
         $profile = Profile::create();
         $profile->user()->associate($user = User::create());
         $profile->user()->dissociate();
+
+        $this->assertNull($profile->user_id);
 
         Event::assertDispatched(
             'eloquent.belongsToDissociating: ' . Profile::class,
@@ -63,6 +84,23 @@ class HasBelongsToEventsTest extends TestCase
     }
 
     /** @test */
+    public function it_fires_belongsToDissociating_and_stops_association_when_false_is_returned()
+    {
+        Event::listen(
+            'eloquent.belongsToDissociating: ' . Profile::class,
+            function () {
+                return false;
+            }
+        );
+
+        $profile = Profile::create();
+        $profile->user()->associate($user = User::create());
+        $profile->user()->dissociate();
+
+        $this->assertEquals($user->id, $profile->user_id);
+    }
+
+    /** @test */
     public function it_fires_belongsToUpdating_and_belongsToUpdated_when_a_parent_model_updated()
     {
         Event::fake();
@@ -70,7 +108,9 @@ class HasBelongsToEventsTest extends TestCase
         $user = User::create();
         $profile = Profile::create();
         $profile->user()->associate($user);
-        $profile->user()->update([]);
+        $profile->user()->update(['name' => 'Joe']);
+
+        $this->assertEquals('Joe', User::find(1)->name);
 
         Event::assertDispatched(
             'eloquent.belongsToUpdating: ' . Profile::class,
@@ -84,5 +124,23 @@ class HasBelongsToEventsTest extends TestCase
                 return $callback[0] == 'user' && $callback[1]->is($profile) && $callback[2]->is($user);
             }
         );
+    }
+
+    /** @test */
+    public function it_fires_belongsToUpdating_and_stops_association_when_false_is_returned()
+    {
+        Event::listen(
+            'eloquent.belongsToUpdating: ' . Profile::class,
+            function () {
+                return false;
+            }
+        );
+
+        $user = User::create();
+        $profile = Profile::create();
+        $profile->user()->associate($user);
+        $profile->user()->update(['name' => 'Joe']);
+
+        $this->assertNull(User::find(1)->name);
     }
 }

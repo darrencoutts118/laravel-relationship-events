@@ -16,10 +16,13 @@ class User extends Model
         HasMorphOneEvents,
         HasBelongsToManyEvents;
 
+    public $fillable = ['name'];
+
     public static function setupTable()
     {
         Schema::create('users', function ($table) {
             $table->increments('id');
+            $table->string('name')->nullable();
             $table->timestamps();
         });
     }
