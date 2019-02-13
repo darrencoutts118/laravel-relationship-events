@@ -25,7 +25,9 @@ class BelongsToMany extends BelongsToManyBase implements EventDispatcher
      */
     public function toggle($ids, $touch = true)
     {
-        $this->parent->fireModelBelongsToManyEvent('toggling', $this->getRelationName(), $ids);
+        if ($this->parent->fireModelBelongsToManyEvent('toggling', $this->getRelationName(), $ids) === false) {
+            return false;
+        }
 
         $result = parent::toggle($ids, $touch);
 
@@ -44,7 +46,9 @@ class BelongsToMany extends BelongsToManyBase implements EventDispatcher
      */
     public function sync($ids, $detaching = true)
     {
-        $this->parent->fireModelBelongsToManyEvent('syncing', $this->getRelationName(), $ids);
+        if ($this->parent->fireModelBelongsToManyEvent('syncing', $this->getRelationName(), $ids) === false) {
+            return false;
+        }
 
         $result = parent::sync($ids, $detaching);
 
@@ -64,7 +68,9 @@ class BelongsToMany extends BelongsToManyBase implements EventDispatcher
      */
     public function updateExistingPivot($id, array $attributes, $touch = true)
     {
-        $this->parent->fireModelBelongsToManyEvent('updatingExistingPivot', $this->getRelationName(), $id, $attributes);
+        if ($this->parent->fireModelBelongsToManyEvent('updatingExistingPivot', $this->getRelationName(), $id, $attributes) === false) {
+            return false;
+        }
 
         if ($result = parent::updateExistingPivot($id, $attributes, $touch)) {
             $this->parent->fireModelBelongsToManyEvent('updatedExistingPivot', $this->getRelationName(), $id, $attributes, false);
@@ -82,7 +88,9 @@ class BelongsToMany extends BelongsToManyBase implements EventDispatcher
      */
     public function attach($id, array $attributes = [], $touch = true)
     {
-        $this->parent->fireModelBelongsToManyEvent('attaching', $this->getRelationName(), $id, $attributes);
+        if ($this->parent->fireModelBelongsToManyEvent('attaching', $this->getRelationName(), $id, $attributes) === false) {
+            return false;
+        }
 
         parent::attach($id, $attributes, $touch);
 
@@ -102,7 +110,9 @@ class BelongsToMany extends BelongsToManyBase implements EventDispatcher
         // Get detached ids to pass them to event
         $ids = $ids ?? $this->parent->{$this->getRelationName()}->pluck('id');
 
-        $this->parent->fireModelBelongsToManyEvent('detaching', $this->getRelationName(), $ids);
+        if ($this->parent->fireModelBelongsToManyEvent('detaching', $this->getRelationName(), $ids) === false) {
+            return false;
+        }
 
         if ($result = parent::detach($ids, $touch)) {
             // If records are detached fire detached event
