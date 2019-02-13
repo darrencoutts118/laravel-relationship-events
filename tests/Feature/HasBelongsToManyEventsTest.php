@@ -26,6 +26,9 @@ class HasBelongsToManyEventsTest extends TestCase
         $role = Role::create(['name' => 'admin']);
         $user->roles()->attach($role);
 
+        $this->assertCount(1, $user->roles);
+        $this->assertEquals('admin', $user->roles[0]->name);
+
         Event::assertDispatched(
             'eloquent.belongsToManyAttaching: ' . User::class,
             function ($event, $callback) use ($user, $role) {
@@ -50,6 +53,8 @@ class HasBelongsToManyEventsTest extends TestCase
         $user->roles()->attach($role);
         $user->roles()->detach($role);
 
+        $this->assertCount(0, $user->roles);
+
         Event::assertDispatched(
             'eloquent.belongsToManyDetaching: ' . User::class,
             function ($event, $callback) use ($user, $role) {
@@ -72,6 +77,9 @@ class HasBelongsToManyEventsTest extends TestCase
         $user = User::create();
         $role = Role::create(['name' => 'admin']);
         $user->roles()->sync($role);
+
+        $this->assertCount(1, $user->roles);
+        $this->assertEquals('admin', $user->roles[0]->name);
 
         Event::assertDispatched(
             'eloquent.belongsToManySyncing: ' . User::class,
@@ -96,6 +104,9 @@ class HasBelongsToManyEventsTest extends TestCase
         $role = Role::create(['name' => 'admin']);
         $user->roles()->toggle($role);
 
+        $this->assertCount(1, $user->roles);
+        $this->assertEquals('admin', $user->roles[0]->name);
+
         Event::assertDispatched(
             'eloquent.belongsToManyToggling: ' . User::class,
             function ($event, $callback) use ($user, $role) {
@@ -119,6 +130,10 @@ class HasBelongsToManyEventsTest extends TestCase
         $role = Role::create(['name' => 'admin']);
         $user->roles()->attach($role);
         $user->roles()->updateExistingPivot(1, ['note' => 'bla bla']);
+
+        $this->assertCount(1, $user->roles);
+        $this->assertEquals('admin', $user->roles[0]->name);
+        $this->assertEquals('bla bla', $user->roles[0]->pivot->note);
 
         Event::assertDispatched(
             'eloquent.belongsToManyUpdatingExistingPivot: ' . User::class,
