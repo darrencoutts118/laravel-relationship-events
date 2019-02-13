@@ -42,6 +42,22 @@ class HasMorphManyEventsTest extends TestCase
     }
 
     /** @test */
+    public function it_fires_morphManyCreating_and_stop_when_false_is_returned_when_belonged_model_with_morph_many_created()
+    {
+        Event::listen(
+            'eloquent.morphManyCreating: ' . Post::class,
+            function () {
+                return false;
+            }
+        );
+
+        $post = Post::create(['user_id' => 1]);
+        $comment = $post->comments()->create([]);
+
+        $this->assertCount(0, $post->comments);
+    }
+
+    /** @test */
     public function it_fires_morphManySaving_and_morphManySaved_when_belonged_model_with_morph_many_saved()
     {
         Event::fake();
@@ -66,28 +82,36 @@ class HasMorphManyEventsTest extends TestCase
     }
 
     /** @test */
+    public function it_fires_morphManySaving_and_stop_when_false_is_returned_when_belonged_model_with_morph_many_saved()
+    {
+        Event::listen(
+            'eloquent.morphManySaving: ' . Post::class,
+            function () {
+                return false;
+            }
+        );
+
+        $post = Post::create(['user_id' => 1]);
+        $comment = $post->comments()->save(new Comment);
+
+        $this->assertCount(0, $post->comments);
+    }
+
+    /** @test */
     public function it_fires_morphManyUpdating_and_morphManyUpdated_when_belonged_model_with_morph_many_updated()
     {
-        Event::fake();
+        Event::listen(
+            'eloquent.morphManyUpdating: ' . Post::class,
+            function () {
+                return false;
+            }
+        );
 
         $post = Post::create(['user_id' => 1]);
         $comment = $post->comments()->save(new Comment);
         $post->comments()->update(['body' => 'Comment']);
 
         $this->assertCount(1, $post->comments);
-        $this->assertEquals('Comment', $post->comments[0]->body);
-
-        Event::assertDispatched(
-            'eloquent.morphManyUpdating: ' . Post::class,
-            function ($event, $callback) use ($post, $comment) {
-                return $callback[0]->is($post);
-            }
-        );
-        Event::assertDispatched(
-            'eloquent.morphManyUpdated: ' . Post::class,
-            function ($event, $callback) use ($post, $comment) {
-                return $callback[0]->is($post) && $callback[1][0]->is($comment);
-            }
-        );
+        $this->assertNull($post->comments[0]->body);
     }
 }
