@@ -23,7 +23,10 @@ class HasManyEventsTest extends TestCase
         Event::fake();
 
         $user = User::create();
-        $post = $user->posts()->create([]);
+        $post = $user->posts()->create(['title' => 'Post title']);
+
+        $this->assertCount(1, $user->posts);
+        $this->assertEquals('Post title', $user->posts[0]->title);
 
         Event::assertDispatched(
             'eloquent.hasManyCreating: ' . User::class,
@@ -47,6 +50,8 @@ class HasManyEventsTest extends TestCase
         $user = User::create();
         $post = $user->posts()->save(new Post);
 
+        $this->assertCount(1, $user->posts);
+
         Event::assertDispatched(
             'eloquent.hasManySaving: ' . User::class,
             function ($event, $callback) use ($user, $post) {
@@ -67,8 +72,11 @@ class HasManyEventsTest extends TestCase
         Event::fake();
 
         $user = User::create();
-        $post = $user->posts()->create([]);
-        $user->posts()->update([]);
+        $post = $user->posts()->create(['title' => 'Post title']);
+        $user->posts()->update(['title' => 'New post title']);
+
+        $this->assertCount(1, $user->posts);
+        $this->assertEquals('New post title', $user->posts[0]->title);
 
         Event::assertDispatched(
             'eloquent.hasManyUpdating: ' . User::class,

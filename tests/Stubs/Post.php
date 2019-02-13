@@ -14,10 +14,13 @@ class Post extends Model
 
     protected $guarded = [];
 
+    protected $fillable = ['title'];
+
     public static function setupTable()
     {
         Schema::create('posts', function ($table) {
             $table->increments('id');
+            $table->string('title')->nullable();
             $table->unsignedInteger('user_id')->nullable();
             $table->timestamps();
         });
