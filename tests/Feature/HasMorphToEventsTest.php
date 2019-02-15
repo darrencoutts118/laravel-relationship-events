@@ -26,6 +26,8 @@ class HasMorphToEventsTest extends TestCase
         $comment = Comment::create();
         $comment->post()->associate($post);
 
+        $this->assertNotNull($comment->post);
+
         Event::assertDispatched(
             'eloquent.morphToAssociating: ' . Comment::class,
             function ($e, $callback) use ($post, $comment) {
@@ -50,6 +52,8 @@ class HasMorphToEventsTest extends TestCase
         $comment->post()->associate($post);
         $comment->post()->dissociate($post);
 
+        $this->assertNull($comment->post);
+
         Event::assertDispatched(
             'eloquent.morphToDissociating: ' . Comment::class,
             function ($e, $callback) use ($post, $comment) {
@@ -72,7 +76,10 @@ class HasMorphToEventsTest extends TestCase
         $post = Post::create();
         $comment = Comment::create();
         $comment->post()->associate($post);
-        $comment->post()->update([]);
+        $comment->post()->update(['title' => 'Post title']);
+
+        $this->assertNotNull($comment->post);
+        $this->assertEquals('Post title', $comment->post->title);
 
         Event::assertDispatched(
             'eloquent.morphToUpdating: ' . Comment::class,
