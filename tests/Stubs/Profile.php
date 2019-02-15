@@ -12,11 +12,14 @@ class Profile extends Model
 
     protected $guarded = [];
 
+    protected $fillable = ['username'];
+
     public static function setupTable()
     {
         Schema::create('profiles', function ($table) {
             $table->increments('id');
             $table->unsignedInteger('user_id')->nullable();
+            $table->string('username')->nullable();
             $table->timestamps();
         });
     }

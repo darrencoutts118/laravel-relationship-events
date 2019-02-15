@@ -25,6 +25,8 @@ class HasOneEventsTest extends TestCase
         $user = User::create();
         $profile = $user->profile()->create([]);
 
+        $this->assertNotNull($user->profile);
+
         Event::assertDispatched(
             'eloquent.hasOneCreating: ' . User::class,
             function ($e, $callback) use ($user, $profile) {
@@ -47,6 +49,8 @@ class HasOneEventsTest extends TestCase
         $user = User::create();
         $profile = $user->profile()->save(new Profile);
 
+        $this->assertNotNull($user->profile);
+
         Event::assertDispatched(
             'eloquent.hasOneSaving: ' . User::class,
             function ($e, $callback) use ($user, $profile) {
@@ -68,7 +72,10 @@ class HasOneEventsTest extends TestCase
 
         $user = User::create();
         $profile = $user->profile()->save(new Profile);
-        $user->profile()->update([]);
+        $user->profile()->update(['username' => 'joeblogs1']);
+
+        $this->assertNotNull($user->profile);
+        $this->assertEquals('joeblogs1', $user->profile->username);
 
         Event::assertDispatched(
             'eloquent.hasOneUpdating: ' . User::class,
