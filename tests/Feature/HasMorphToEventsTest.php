@@ -43,6 +43,23 @@ class HasMorphToEventsTest extends TestCase
     }
 
     /** @test */
+    public function it_fires_morphToAssociating_and_stops_if_false_is_returned()
+    {
+        Event::listen(
+            'eloquent.morphToAssociating: ' . Comment::class,
+            function () {
+                return false;
+            }
+        );
+
+        $post = Post::create();
+        $comment = Comment::create();
+        $comment->post()->associate($post);
+
+        $this->assertNull($comment->post);
+    }
+
+    /** @test */
     public function it_fires_morphToDissociating_and_morphToDissociated()
     {
         Event::fake();
@@ -66,6 +83,24 @@ class HasMorphToEventsTest extends TestCase
                 return $callback[0] == 'Chelout\RelationshipEvents\Tests\Stubs\Post' && $callback[1]->is($comment) && $callback[2]->is($post);
             }
         );
+    }
+
+    /** @test */
+    public function it_fires_morphToDissociating_and_stops_if_false_is_returned()
+    {
+        Event::listen(
+            'eloquent.morphToDissociating: ' . Comment::class,
+            function () {
+                return false;
+            }
+        );
+
+        $post = Post::create();
+        $comment = Comment::create();
+        $comment->post()->associate($post);
+        $comment->post()->dissociate($post);
+
+        $this->assertNotNull($comment->post);
     }
 
     /** @test */
@@ -93,5 +128,24 @@ class HasMorphToEventsTest extends TestCase
                 return $callback[0] == 'Chelout\RelationshipEvents\Tests\Stubs\Post' && $callback[1]->is($comment) && $callback[2]->is($post);
             }
         );
+    }
+
+    /** @test */
+    public function it_fires_morphToUpdating_and_stops_if_false_is_returned()
+    {
+        Event::listen(
+            'eloquent.morphToUpdating: ' . Comment::class,
+            function () {
+                return false;
+            }
+        );
+
+        $post = Post::create();
+        $comment = Comment::create();
+        $comment->post()->associate($post);
+        $comment->post()->update(['title' => 'Post title']);
+
+        $this->assertNotNull($comment->post);
+        $this->assertNull($comment->post->title);
     }
 }
