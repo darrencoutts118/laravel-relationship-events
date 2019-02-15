@@ -26,6 +26,8 @@ class HasMorphToManyEventsTest extends TestCase
         $tag = Tag::create();
         $post->tags()->attach($tag);
 
+        $this->assertCount(1, $post->tags);
+
         Event::assertDispatched(
             'eloquent.morphToManyAttaching: ' . Post::class,
             function ($e, $callback) use ($post, $tag) {
@@ -50,6 +52,8 @@ class HasMorphToManyEventsTest extends TestCase
         $post->tags()->attach($tag);
         $post->tags()->detach($tag);
 
+        $this->assertCount(0, $post->tags);
+
         Event::assertDispatched(
             'eloquent.morphToManyDetaching: ' . Post::class,
             function ($e, $callback) use ($post, $tag) {
@@ -73,6 +77,8 @@ class HasMorphToManyEventsTest extends TestCase
         $tag = Tag::create();
         $post->tags()->sync($tag);
 
+        $this->assertCount(1, $post->tags);
+
         Event::assertDispatched(
             'eloquent.morphToManySyncing: ' . Post::class,
             function ($e, $callback) use ($post, $tag) {
@@ -95,7 +101,10 @@ class HasMorphToManyEventsTest extends TestCase
         $post = Post::create();
         $tag = Tag::create();
         $post->tags()->sync($tag);
-        $post->tags()->updateExistingPivot(1, ['created_at' => now()]);
+        $post->tags()->updateExistingPivot(1, ['pivot_field' => 'pivot']);
+
+        $this->assertCount(1, $post->tags);
+        $this->assertEquals('pivot', $post->tags[0]->pivot->pivot_field);
 
         Event::assertDispatched(
             'eloquent.morphToManyUpdatingExistingPivot: ' . Post::class,
