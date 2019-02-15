@@ -42,6 +42,22 @@ class HasOneEventsTest extends TestCase
     }
 
     /** @test */
+    public function it_fires_hasOneCreating_and_stops_when_false_is_returned()
+    {
+        Event::listen(
+            'eloquent.hasOneCreating: ' . User::class,
+            function () {
+                return false;
+            }
+        );
+
+        $user = User::create();
+        $profile = $user->profile()->create([]);
+
+        $this->assertNull($user->profile);
+    }
+
+    /** @test */
     public function it_fires_hasOneSaving_and_hasOneSaved_when_a_belonged_model_saved()
     {
         Event::fake();
@@ -63,6 +79,22 @@ class HasOneEventsTest extends TestCase
                 return $callback[0]->is($user) && $callback[1]->is($profile);
             }
         );
+    }
+
+    /** @test */
+    public function it_fires_hasOneSaving_and_stops_when_false_is_returned()
+    {
+        Event::listen(
+            'eloquent.hasOneSaving: ' . User::class,
+            function () {
+                return false;
+            }
+        );
+
+        $user = User::create();
+        $profile = $user->profile()->save(new Profile);
+
+        $this->assertNull($user->profile);
     }
 
     /** @test */
@@ -89,5 +121,23 @@ class HasOneEventsTest extends TestCase
                 return $callback[0]->is($user) && $callback[1]->is($profile);
             }
         );
+    }
+
+    /** @test */
+    public function it_fires_hasOneUpdating_and_stops_when_false_is_returned()
+    {
+        Event::listen(
+            'eloquent.hasOneUpdating: ' . User::class,
+            function () {
+                return false;
+            }
+        );
+
+        $user = User::create();
+        $profile = $user->profile()->save(new Profile);
+        $user->profile()->update(['username' => 'joeblogs1']);
+
+        $this->assertNotNull($user->profile);
+        $this->assertNull($user->profile->username);
     }
 }
